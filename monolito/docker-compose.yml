@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dsd_monolito_postgres
+    environment:
+      POSTGRES_USER: monolito
+      POSTGRES_PASSWORD: monolito
+      POSTGRES_DB: monolito_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - monolito_postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+volumes:
+  monolito_postgres_data:
