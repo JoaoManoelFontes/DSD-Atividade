@@ -11,4 +11,6 @@ function getPort(): number {
 export const config = {
   host: process.env.HOST ?? "0.0.0.0",
   port: getPort(),
+  databaseUrl:
+    process.env.DATABASE_URL ?? "postgresql://menu:menu@localhost:5431/menu",
 };

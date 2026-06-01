@@ -60,4 +60,6 @@ Each service loads its own `.env` file. The `.env.example` file documents the ex
 
 ## Current Scope
 
-This slice creates the four independently deployable Fastify services, one isolated PostgreSQL container per service, the shared RabbitMQ broker needed by notifications, and health checks. Database access, RabbitMQ integration in application code, domain endpoints, and service communication will be added incrementally.
+This version contains the four independently deployable Fastify services, one isolated PostgreSQL container per service, the shared RabbitMQ broker needed by notifications, and health checks.
+
+The `menu-service` also implements its isolated PostgreSQL model, Drizzle migrations, development seed, and CRUD endpoints. RabbitMQ integration, the remaining domain endpoints, and communication between services will be added incrementally.
