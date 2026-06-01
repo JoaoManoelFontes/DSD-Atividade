@@ -46,7 +46,7 @@ export class OrderRepository {
     const [row] = await this.database<OrderRow[]>`
       INSERT INTO orders.orders (items, status, total, observation)
       VALUES (
-        ${this.database.json(input.items)},
+        ${this.database.json(input.items as unknown as postgres.JSONValue)},
         ${input.status},
         ${input.total},
         ${input.observation ?? null}

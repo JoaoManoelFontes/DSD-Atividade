@@ -20,11 +20,13 @@ export function buildApp() {
       return reply.code(error.statusCode).send({ message: error.message });
     }
 
-    if ("validation" in error) {
-      return reply.code(400).send({ message: error.message });
+    const fastifyError = error as Error & { validation?: unknown };
+
+    if (fastifyError.validation) {
+      return reply.code(400).send({ message: fastifyError.message });
     }
 
-    app.log.error(error);
+    app.log.error(fastifyError);
     return reply.code(500).send({ message: "Internal server error" });
   });
 
