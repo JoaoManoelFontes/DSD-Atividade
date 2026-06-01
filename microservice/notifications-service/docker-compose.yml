@@ -1,0 +1,57 @@
+services:
+  notifications-service:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "3004:3004"
+    depends_on:
+      notifications-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3004/health').then(response => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  notifications-db:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    ports:
+      - "5434:5432"
+    volumes:
+      - notifications-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notifications -d notifications"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    env_file:
+      - .env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  notifications-db-data:
+  rabbitmq-data:

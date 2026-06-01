@@ -21,9 +21,23 @@ Each service SHALL expose an HTTP `GET /health` endpoint that identifies the ser
 - **WHEN** a client sends `GET /health` to any service
 - **THEN** the service responds with HTTP 200 and a body containing `status: "ok"` and its service name
 
-### Requirement: Compose orchestration
-The system SHALL provide a Docker Compose file that builds, starts, and health-checks the four services.
+### Requirement: Independent Compose orchestration
+Each service SHALL provide its own Docker Compose file that builds, starts, and health-checks that service without starting the other application services.
 
-#### Scenario: Start the microservices setup
-- **WHEN** a developer runs `docker compose up --build`
-- **THEN** Docker Compose builds and starts the four services on distinct host ports
+#### Scenario: Start one microservice stack
+- **WHEN** a developer runs `docker compose up --build` inside a service directory
+- **THEN** Docker Compose builds and starts only that application service and its local infrastructure
+
+### Requirement: Isolated PostgreSQL containers
+Each service SHALL provide its own PostgreSQL container and SHALL NOT share its database container with another application service.
+
+#### Scenario: Start a service database
+- **WHEN** a developer starts any service stack
+- **THEN** Docker Compose starts a PostgreSQL container dedicated to that service
+
+### Requirement: Shared RabbitMQ broker
+The notifications stack SHALL provide one RabbitMQ broker that can be shared by future event publishers and notification consumers.
+
+#### Scenario: Start notifications infrastructure
+- **WHEN** a developer starts the notifications stack
+- **THEN** Docker Compose starts the notifications application, its isolated PostgreSQL container, and one RabbitMQ broker

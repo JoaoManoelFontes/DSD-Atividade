@@ -12,7 +12,9 @@
 ## 3. Container Orchestration
 
 - [x] 3.1 Add one Dockerfile per service
-- [x] 3.2 Add Docker Compose orchestration with distinct ports and health checks
+- [x] 3.2 Add an independent Docker Compose file to each service with distinct ports and health checks
+- [x] 3.3 Add one isolated PostgreSQL container to each service stack
+- [x] 3.4 Add one shared RabbitMQ broker to the notifications stack
 
 ## 4. Documentation and Verification
 

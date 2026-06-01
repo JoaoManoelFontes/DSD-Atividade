@@ -1,0 +1,39 @@
+services:
+  payments-service:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "3003:3003"
+    depends_on:
+      payments-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3003/health').then(response => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  payments-db:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    volumes:
+      - payments-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payments -d payments"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  payments-db-data:
