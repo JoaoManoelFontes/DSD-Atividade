@@ -62,4 +62,8 @@ Each service loads its own `.env` file. The `.env.example` file documents the ex
 
 This version contains the four independently deployable Fastify services, one isolated PostgreSQL container per service, the shared RabbitMQ broker needed by notifications, and health checks.
 
-The `menu-service` also implements its isolated PostgreSQL model, Drizzle migrations, development seed, and CRUD endpoints. RabbitMQ integration, the remaining domain endpoints, and communication between services will be added incrementally.
+The `menu-service` also implements its isolated PostgreSQL model, Drizzle migrations, development seed, and CRUD endpoints.
+
+The `payments-service` implements its isolated PostgreSQL model, Drizzle migrations, mock approved payment processing with logs, and status queries.
+
+RabbitMQ integration, the remaining domain endpoints, and communication between services will be added incrementally.
