@@ -7,8 +7,8 @@ services:
     ports:
       - "3004:3004"
     depends_on:
-      notifications-db:
-        condition: service_healthy
+      mailhog:
+        condition: service_started
       rabbitmq:
         condition: service_healthy
     healthcheck:
@@ -23,35 +23,28 @@ services:
       timeout: 3s
       retries: 5
 
-  notifications-db:
-    image: postgres:16-alpine
-    env_file:
-      - .env
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
     ports:
-      - "5434:5432"
-    volumes:
-      - notifications-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U notifications -d notifications"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+      - "1025:1025"
+      - "8025:8025"
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
     env_file:
       - .env
+    networks:
+      - default
+      - snack-bar-notifications
     ports:
       - "5672:5672"
       - "15672:15672"
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-volumes:
-  notifications-db-data:
-  rabbitmq-data:
+networks:
+  snack-bar-notifications:
+    name: snack-bar-notifications

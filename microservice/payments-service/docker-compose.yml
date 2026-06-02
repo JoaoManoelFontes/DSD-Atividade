@@ -9,6 +9,9 @@ services:
     depends_on:
       payments-db:
         condition: service_healthy
+    networks:
+      - default
+      - snack-bar-notifications
     healthcheck:
       test:
         [
@@ -37,3 +40,7 @@ services:
 
 volumes:
   payments-db-data:
+
+networks:
+  snack-bar-notifications:
+    external: true

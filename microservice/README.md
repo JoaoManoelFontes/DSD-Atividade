@@ -20,9 +20,9 @@ Each microservice has its own `docker-compose.yml` and can be started independen
 | `menu-service` | `3001` | `5431` | - |
 | `orders-service` | `3002` | `5432` | - |
 | `payments-service` | `3003` | `5433` | - |
-| `notifications-service` | `3004` | `5434` | RabbitMQ on `5672`, management UI on `15672` |
+| `notifications-service` | `3004` | - | MailHog SMTP on `1025`, web UI on `8025`; RabbitMQ on `5672`, management UI on `15672` |
 
-RabbitMQ belongs to the notifications stack for local development because the notification queue must have a single shared broker. Creating one broker per service would isolate publishers from consumers.
+The notifications stack includes RabbitMQ because payment approval events are consumed asynchronously.
 
 ## Run with Docker Compose
 
@@ -60,10 +60,23 @@ Each service loads its own `.env` file. The `.env.example` file documents the ex
 
 ## Current Scope
 
-This version contains the four independently deployable Fastify services, one isolated PostgreSQL container per service, the shared RabbitMQ broker needed by notifications, and health checks.
+This version contains the four independently deployable Fastify services and health checks. Services that currently need persistence own isolated PostgreSQL containers.
 
 The `menu-service` also implements its isolated PostgreSQL model, Drizzle migrations, development seed, and CRUD endpoints.
 
-The `payments-service` implements its isolated PostgreSQL model, Drizzle migrations, mock approved payment processing with logs, and status queries.
+The `orders-service` implements its isolated PostgreSQL model, Drizzle migrations, CRUD endpoints, synchronous menu-item validation, HTTP payment initiation, and asynchronous payment-status updates. New orders start with `PENDING` status and become `APPROVED` after a RabbitMQ event.
 
-RabbitMQ integration, the remaining domain endpoints, and communication between services will be added incrementally.
+The `payments-service` implements its isolated PostgreSQL model, Drizzle migrations, mock approved payment processing with logs, status queries, and `payment.approved` RabbitMQ publication.
+
+The `notifications-service` consumes payment approval events from its own `email.notifications` queue and sends email through MailHog without persistence.
+
+## Communication, Resilience, and Errors
+
+| Flow | Type | Summary |
+| --- | --- | --- |
+| `orders-service` -> `menu-service` | Synchronous HTTP | Validates whether a menu item exists and is available. |
+| `orders-service` -> `payments-service` | Synchronous HTTP | Starts mock payment processing with an explicit timeout. |
+| `payments-service` -> RabbitMQ -> `orders-service` | Asynchronous event | Updates the order after `payment.approved`. |
+| `payments-service` -> RabbitMQ -> `notifications-service` | Asynchronous event | Sends the kitchen email after `payment.approved`. |
+
+RabbitMQ uses durable queues, persistent messages, and publisher confirmations. Consumers discard invalid events and requeue messages after operational failures, such as an unavailable SMTP server. HTTP errors return clear status codes: `400` for invalid menu items, `503` when the menu service is unavailable, and `502` when payment processing cannot be requested.

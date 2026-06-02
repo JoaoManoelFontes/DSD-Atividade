@@ -11,11 +11,13 @@
     "start": "node --env-file=.env --enable-source-maps dist/server.js"
   },
   "dependencies": {
+    "amqplib": "^2.0.1",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.2.1",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.8",
     "@types/node": "^22.13.10",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.3",

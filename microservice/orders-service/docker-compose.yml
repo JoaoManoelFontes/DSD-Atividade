@@ -4,11 +4,18 @@ services:
       context: .
     env_file:
       - .env
+    environment:
+      MENU_SERVICE_URL: ${MENU_SERVICE_URL:-http://host.docker.internal:3001}
+      PAYMENTS_SERVICE_URL: ${PAYMENTS_SERVICE_URL:-http://host.docker.internal:3003}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672}
     ports:
       - "3002:3002"
     depends_on:
       orders-db:
         condition: service_healthy
+    networks:
+      - default
+      - snack-bar-notifications
     healthcheck:
       test:
         [
@@ -37,3 +44,7 @@ services:
 
 volumes:
   orders-db-data:
+
+networks:
+  snack-bar-notifications:
+    external: true

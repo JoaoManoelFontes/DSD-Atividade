@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { eq } from "drizzle-orm";
 import { closeDatabase, db } from "./db/client.js";
 import { payments } from "./db/schema.js";
+import type { PaymentEventPublisher } from "./publisher.js";
 
 interface PaymentBody {
   orderId: number;
@@ -49,10 +50,11 @@ function serializePayment(payment: typeof payments.$inferSelect) {
   };
 }
 
-export function buildApp() {
+export function buildApp(paymentEventPublisher: PaymentEventPublisher) {
   const app = Fastify({ logger: true });
 
   app.addHook("onClose", async () => {
+    await paymentEventPublisher.close();
     await closeDatabase();
   });
 
@@ -85,6 +87,19 @@ export function buildApp() {
       request.log.info(
         { paymentId: payment.id, orderId: payment.orderId, status: payment.status },
         "Mock payment processed",
+      );
+
+      await paymentEventPublisher.publishPaymentApproved({
+        eventType: "payment.approved",
+        paymentId: payment.id,
+        orderId: payment.orderId,
+        status: "APPROVED",
+        occurredAt: paidAt.toISOString(),
+      });
+
+      request.log.info(
+        { paymentId: payment.id, orderId: payment.orderId },
+        "Payment approved event published",
       );
 
       return reply.code(201).send(serializePayment(payment));
