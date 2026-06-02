@@ -13,6 +13,7 @@ Each order contains:
 | `itemName` | string | Menu item name snapshot |
 | `price` | number | Menu item price snapshot |
 | `requestedBy` | string | Customer name |
+| `observation` | string or null | Optional preparation instructions, up to 500 characters |
 | `paymentStatus` | string | Starts as `PENDING` and becomes `APPROVED` asynchronously |
 | `createdAt` | date | Creation timestamp |
 | `updatedAt` | date | Last update timestamp |
@@ -70,9 +71,9 @@ Create an order using an available menu item:
 ```bash
 curl -X POST http://localhost:3002/orders \
   -H "Content-Type: application/json" \
-  -d '{"menuItemId":1,"requestedBy":"Ana"}'
+  -d '{"menuItemId":1,"requestedBy":"Ana","observation":"Sem cebola"}'
 ```
 
-The service reads the menu item from `GET http://localhost:3001/menu-items/:id`, saves the order as `PENDING`, and requests payment processing from `POST http://localhost:3003/payments`.
+The service reads the menu item from `GET http://localhost:3001/menu-items/:id`, saves the order as `PENDING`, and requests payment processing from `POST http://localhost:3003/payments`. When present, `observation` is forwarded through the payment approval event so the kitchen receives the preparation instructions.
 
 If payment initiation fails, the persisted order remains `PENDING` and the endpoint returns `502` with its `orderId`. After payment approval, RabbitMQ delivers a `payment.approved` event through the durable `orders.payment-status` queue and the order becomes `APPROVED`.

@@ -6,6 +6,7 @@ interface PaymentApprovedEvent {
   paymentId: number;
   orderId: number;
   status: "APPROVED";
+  observation: string | null;
   occurredAt: string;
 }
 

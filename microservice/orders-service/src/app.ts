@@ -12,6 +12,7 @@ import { processPayment, PaymentsServiceError } from "./payments-client.js";
 interface OrderBody {
   menuItemId: number;
   requestedBy: string;
+  observation?: string | null;
 }
 
 interface OrderParams {
@@ -25,6 +26,7 @@ const orderBodySchema = {
   properties: {
     menuItemId: { type: "integer", minimum: 1 },
     requestedBy: { type: "string", minLength: 1, maxLength: 120 },
+    observation: { type: ["string", "null"], maxLength: 500 },
   },
 } as const;
 
@@ -83,6 +85,7 @@ export function buildApp() {
             itemName: menuItem.name,
             price: menuItem.price.toFixed(2),
             requestedBy: request.body.requestedBy,
+            observation: request.body.observation,
           })
           .returning();
 
@@ -92,6 +95,7 @@ export function buildApp() {
           await processPayment({
             orderId: order.id,
             amount: Number(order.price),
+            observation: order.observation,
           });
         } catch (error) {
           if (error instanceof PaymentsServiceError) {
@@ -160,6 +164,7 @@ export function buildApp() {
             itemName: menuItem.name,
             price: menuItem.price.toFixed(2),
             requestedBy: request.body.requestedBy,
+            observation: request.body.observation ?? null,
             updatedAt: new Date(),
           })
           .where(eq(orders.id, Number(request.params.id)))

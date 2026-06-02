@@ -7,6 +7,7 @@ import type { PaymentEventPublisher } from "./publisher.js";
 interface PaymentBody {
   orderId: number;
   amount: number;
+  observation?: string | null;
 }
 
 interface PaymentParams {
@@ -24,6 +25,7 @@ const paymentBodySchema = {
   properties: {
     orderId: { type: "integer", minimum: 1 },
     amount: { type: "number", exclusiveMinimum: 0 },
+    observation: { type: ["string", "null"], maxLength: 500 },
   },
 } as const;
 
@@ -71,7 +73,7 @@ export function buildApp(paymentEventPublisher: PaymentEventPublisher) {
 
       request.log.info(
         { orderId: request.body.orderId, amount: request.body.amount },
-        "Processing mock payment",
+        "***** LOGGER: Processing mock payment *****",
       );
 
       const [payment] = await db
@@ -94,12 +96,13 @@ export function buildApp(paymentEventPublisher: PaymentEventPublisher) {
         paymentId: payment.id,
         orderId: payment.orderId,
         status: "APPROVED",
+        observation: request.body.observation ?? null,
         occurredAt: paidAt.toISOString(),
       });
 
       request.log.info(
         { paymentId: payment.id, orderId: payment.orderId },
-        "Payment approved event published",
+        "***** LOGGER: Payment approved and event published *****",
       );
 
       return reply.code(201).send(serializePayment(payment));

@@ -13,6 +13,7 @@ export const orders = pgTable("orders", {
   itemName: varchar("item_name", { length: 120 }).notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   requestedBy: varchar("requested_by", { length: 120 }).notNull(),
+  observation: varchar("observation", { length: 500 }),
   paymentStatus: varchar("payment_status", { length: 30 })
     .notNull()
     .default("PENDING"),

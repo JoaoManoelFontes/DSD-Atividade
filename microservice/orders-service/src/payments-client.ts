@@ -3,6 +3,7 @@ import { config } from "./config.js";
 interface ProcessPaymentInput {
   orderId: number;
   amount: number;
+  observation: string | null;
 }
 
 export class PaymentsServiceError extends Error {}

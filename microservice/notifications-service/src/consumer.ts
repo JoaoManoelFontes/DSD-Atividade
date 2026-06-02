@@ -8,6 +8,7 @@ interface PaymentApprovedEvent {
   paymentId: number;
   orderId: number;
   status: "APPROVED";
+  observation: string | null;
   occurredAt: string;
 }
 
@@ -25,13 +26,19 @@ function parsePaymentApprovedEvent(content: Buffer): PaymentApprovedEvent {
     typeof payload.orderId !== "number" ||
     !("status" in payload) ||
     payload.status !== "APPROVED" ||
+    ("observation" in payload &&
+      typeof payload.observation !== "string" &&
+      payload.observation !== null) ||
     !("occurredAt" in payload) ||
     typeof payload.occurredAt !== "string"
   ) {
     throw new Error("Invalid payment approved event");
   }
 
-  return payload as PaymentApprovedEvent;
+  return {
+    ...payload,
+    observation: "observation" in payload ? payload.observation : null,
+  } as PaymentApprovedEvent;
 }
 
 export async function startNotificationConsumer(logger: FastifyBaseLogger) {
@@ -68,7 +75,12 @@ export async function startNotificationConsumer(logger: FastifyBaseLogger) {
       const info = await sendEmail({
         to: "cozinha@lanchonete.com",
         subject: "Novo pedido pago",
-        text: `O pedido ${event.orderId} foi pago e já pode ser preparado.`,
+        text: [
+          `O pedido ${event.orderId} foi pago e já pode ser preparado.`,
+          event.observation ? `Observação: ${event.observation}` : null,
+        ]
+          .filter(Boolean)
+          .join("\n"),
       });
 
       logger.info(
