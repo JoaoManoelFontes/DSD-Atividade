@@ -1,0 +1,26 @@
+{
+  "name": "dsd-lanchonete-monolito",
+  "version": "1.0.0",
+  "description": "Versao monolito do sistema de pedidos de lanchonete.",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "monolito",
+    "fastify",
+    "postgresql",
+    "dsd"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
